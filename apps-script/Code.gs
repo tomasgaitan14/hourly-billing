@@ -3,31 +3,32 @@
 
 var SHEET_NAME = 'Horas';
 
+var MONTH_NAMES = [
+  'Enero','Febrero','Marzo','Abril','Mayo','Junio',
+  'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'
+];
+
 function doGet(e) {
   var action = e.parameter.action;
-
-  if (action === 'list') {
-    return handleList();
-  }
-
-  if (action === 'add') {
-    return handleAdd(e.parameter);
-  }
-
+  if (action === 'list') return handleList();
+  if (action === 'add') return handleAdd(e.parameter);
   return jsonResponse({ status: 'error', message: 'Acción no reconocida' });
 }
 
 function handleAdd(params) {
   var sheet = getSheet();
+  var nextRow = sheet.getLastRow() + 1;
 
-  // Agrega fila al final
-  sheet.appendRow([
+  // Fuerza texto en columnas fecha y mes para que Sheets no las convierta a Date
+  var range = sheet.getRange(nextRow, 1, 1, 5);
+  range.setNumberFormats([['@', '0.##', '@', '@', '@']]);
+  range.setValues([[
     params.fecha,
     parseFloat(params.horas),
     params.descripcion,
     params.mes,
     params.timestamp,
-  ]);
+  ]]);
 
   return jsonResponse({ status: 'ok' });
 }
@@ -36,17 +37,16 @@ function handleList() {
   var sheet = getSheet();
   var data = sheet.getDataRange().getValues();
 
-  // Fila 1 son los headers — la salteamos
   var entries = [];
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
-    if (!row[0]) continue; // fila vacía
+    if (!row[0]) continue;
     entries.push({
       id: String(i),
-      fecha: row[0],
+      fecha: formatFecha(row[0]),
       horas: row[1],
       descripcion: row[2],
-      mes: row[3],
+      mes: formatMes(row[3]),
       timestamp: row[4],
     });
   }
@@ -54,18 +54,33 @@ function handleList() {
   return jsonResponse({ status: 'ok', entries: entries });
 }
 
+// Convierte Date o string a "DD/MM/YYYY"
+function formatFecha(val) {
+  if (val instanceof Date) {
+    var d = String(val.getDate()).padStart(2, '0');
+    var m = String(val.getMonth() + 1).padStart(2, '0');
+    var y = val.getFullYear();
+    return d + '/' + m + '/' + y;
+  }
+  return String(val);
+}
+
+// Convierte Date o string a "Mes YYYY"
+function formatMes(val) {
+  if (val instanceof Date) {
+    return MONTH_NAMES[val.getMonth()] + ' ' + val.getFullYear();
+  }
+  return String(val);
+}
+
 function getSheet() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-
-  // Busca insensible a espacios en blanco por si el nombre tiene trailing space
   var sheets = ss.getSheets();
   for (var i = 0; i < sheets.length; i++) {
     if (sheets[i].getName().trim() === SHEET_NAME) {
       return sheets[i];
     }
   }
-
-  // No existe — la crea con headers
   var sheet = ss.insertSheet(SHEET_NAME);
   sheet.appendRow(['Fecha', 'Horas', 'Descripción', 'Mes', 'Timestamp']);
   sheet.getRange(1, 1, 1, 5).setFontWeight('bold');
