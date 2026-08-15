@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-const ACCESS_KEY = '14123204Tag.'
+const ACCESS_KEY = '14123204'
 const STORAGE_KEY = 'ved_access'
 
 interface Props {
