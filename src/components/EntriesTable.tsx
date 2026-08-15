@@ -1,5 +1,7 @@
 import type { Entry } from '../types'
 
+const HOURLY_RATE_USD = 35
+
 interface Props {
   entries: Entry[]
   selectedMonth: string
@@ -8,6 +10,7 @@ interface Props {
 export function EntriesTable({ entries, selectedMonth }: Props) {
   const filtered = entries.filter(e => e.mes === selectedMonth)
   const total = filtered.reduce((sum, e) => sum + Number(e.horas), 0)
+  const totalUSD = total * HOURLY_RATE_USD
 
   if (filtered.length === 0) {
     return (
@@ -21,9 +24,14 @@ export function EntriesTable({ entries, selectedMonth }: Props) {
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-800">{selectedMonth}</h2>
-        <span className="text-sm font-medium text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full">
-          Total: {total % 1 === 0 ? total : total.toFixed(2)} hs
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full">
+            {total % 1 === 0 ? total : total.toFixed(2)} hs
+          </span>
+          <span className="text-sm font-medium text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">
+            ≈ ${totalUSD % 1 === 0 ? totalUSD : totalUSD.toFixed(2)} USD
+          </span>
+        </div>
       </div>
 
       <div className="overflow-x-auto">
