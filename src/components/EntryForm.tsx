@@ -9,7 +9,7 @@ interface Props {
 }
 
 const MONTH_OPTIONS = generateMonthOptions()
-const HOUR_OPTIONS = [0.45, 0.5, 1, 2, 3]
+const HOUR_OPTIONS = [0.45, 0.5, 1, 1.5, 2, 3]
 
 export function EntryForm({ onEntryAdded }: Props) {
   const [fecha, setFecha] = useState(todayISODate())

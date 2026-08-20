@@ -7,8 +7,15 @@ interface Props {
   selectedMonth: string
 }
 
+function parseFecha(fecha: string): number {
+  const [dd, mm, yyyy] = fecha.split('/')
+  return new Date(`${yyyy}-${mm}-${dd}`).getTime()
+}
+
 export function EntriesTable({ entries, selectedMonth }: Props) {
-  const filtered = entries.filter(e => e.mes === selectedMonth)
+  const filtered = entries
+    .filter(e => e.mes === selectedMonth)
+    .sort((a, b) => parseFecha(a.fecha) - parseFecha(b.fecha))
   const total = filtered.reduce((sum, e) => sum + Number(e.horas), 0)
   const totalUSD = total * HOURLY_RATE_USD
 
