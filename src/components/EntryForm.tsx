@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { addEntry } from '../lib/sheets'
-import { generateMonthOptions, currentMonthLabel, todayISODate, formatDateDisplay } from '../lib/months'
+import { generateMonthOptions, getBillingMonth, getBillingPeriod, todayISODate, formatDateDisplay } from '../lib/months'
 import type { NewEntry } from '../types'
 
 interface Props {
@@ -12,11 +12,17 @@ const MONTH_OPTIONS = generateMonthOptions()
 const HOUR_OPTIONS = [0.45, 0.5, 1, 1.5, 2, 3]
 
 export function EntryForm({ onEntryAdded }: Props) {
-  const [fecha, setFecha] = useState(todayISODate())
+  const today = todayISODate()
+  const [fecha, setFecha] = useState(today)
   const [horas, setHoras] = useState('')
   const [descripcion, setDescripcion] = useState('')
-  const [mes, setMes] = useState(currentMonthLabel())
+  const [mes, setMes] = useState(getBillingMonth(today))
   const [loading, setLoading] = useState(false)
+
+  // Auto-asigna el mes de facturación al cambiar la fecha
+  useEffect(() => {
+    setMes(getBillingMonth(fecha))
+  }, [fecha])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -44,7 +50,7 @@ export function EntryForm({ onEntryAdded }: Props) {
       toast.success('Entrada guardada')
       setHoras('')
       setDescripcion('')
-      setFecha(todayISODate())
+      setFecha(today)
       onEntryAdded()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Error al guardar')
@@ -59,7 +65,10 @@ export function EntryForm({ onEntryAdded }: Props) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Mes de reporte</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Mes de facturación
+            <span className="ml-2 text-xs font-normal text-gray-400">{getBillingPeriod(mes)}</span>
+          </label>
           <select
             value={mes}
             onChange={e => setMes(e.target.value)}

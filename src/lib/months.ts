@@ -16,9 +16,36 @@ export function generateMonthOptions(): string[] {
   return options
 }
 
+// Calcula el mes de facturación según la fecha (ciclo 26 al 25)
+// Día 1-25 → mes actual | Día 26-31 → mes siguiente
+export function getBillingMonth(isoDate: string): string {
+  const [yyyy, mm, dd] = isoDate.split('-').map(Number)
+  if (dd >= 26) {
+    const next = new Date(yyyy, mm, 1) // mm es 1-based, new Date lo trata como índice del mes siguiente
+    return `${MONTH_NAMES[next.getMonth()]} ${next.getFullYear()}`
+  }
+  return `${MONTH_NAMES[mm - 1]} ${yyyy}`
+}
+
+// Devuelve el período de facturación legible: "26/07/2026 – 25/08/2026"
+export function getBillingPeriod(monthLabel: string): string {
+  const [monthName, yearStr] = monthLabel.split(' ')
+  const year = parseInt(yearStr)
+  const monthIndex = MONTH_NAMES.indexOf(monthName) // 0-based
+
+  const prevIndex = monthIndex === 0 ? 11 : monthIndex - 1
+  const prevYear = monthIndex === 0 ? year - 1 : year
+
+  const fromMonth = String(prevIndex + 1).padStart(2, '0')
+  const toMonth = String(monthIndex + 1).padStart(2, '0')
+
+  return `26/${fromMonth}/${prevYear} – 25/${toMonth}/${year}`
+}
+
 export function currentMonthLabel(): string {
   const now = new Date()
-  return `${MONTH_NAMES[now.getMonth()]} ${now.getFullYear()}`
+  const isoDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  return getBillingMonth(isoDate)
 }
 
 export function todayISODate(): string {

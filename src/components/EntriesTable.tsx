@@ -1,3 +1,4 @@
+import { getBillingPeriod } from '../lib/months'
 import type { Entry } from '../types'
 
 const HOURLY_RATE_USD = 35
@@ -30,7 +31,10 @@ export function EntriesTable({ entries, selectedMonth }: Props) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-800">{selectedMonth}</h2>
+        <div>
+          <h2 className="text-lg font-semibold text-gray-800">{selectedMonth}</h2>
+          <p className="text-xs text-gray-400 mt-0.5">{getBillingPeriod(selectedMonth)}</p>
+        </div>
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full">
             {total % 1 === 0 ? total : total.toFixed(2)} hs
