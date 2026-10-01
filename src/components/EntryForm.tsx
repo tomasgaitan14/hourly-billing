@@ -10,6 +10,13 @@ interface Props {
 
 const MONTH_OPTIONS = generateMonthOptions()
 const HOUR_OPTIONS = [0.45, 0.5, 1, 1.5, 2, 3]
+const DESCRIPTION_PREFIXES = ['[Ucompensar] - ', '[Capabilia] - ']
+
+function applyPrefix(current: string, prefix: string): string {
+  const existing = DESCRIPTION_PREFIXES.find(p => current.startsWith(p))
+  if (existing) return prefix + current.slice(existing.length)
+  return prefix + current
+}
 
 export function EntryForm({ onEntryAdded }: Props) {
   const today = todayISODate()
@@ -112,7 +119,28 @@ export function EntryForm({ onEntryAdded }: Props) {
         </div>
 
         <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-sm font-medium text-gray-700">Descripción</label>
+            <div className="flex gap-1.5">
+              {DESCRIPTION_PREFIXES.map(prefix => {
+                const active = descripcion.startsWith(prefix)
+                return (
+                  <button
+                    key={prefix}
+                    type="button"
+                    onClick={() => setDescripcion(applyPrefix(descripcion, prefix))}
+                    className={`text-xs px-2 py-0.5 rounded-md border font-medium transition-colors ${
+                      active
+                        ? 'bg-indigo-600 text-white border-indigo-600'
+                        : 'border-gray-300 text-gray-500 hover:border-indigo-400 hover:text-indigo-600'
+                    }`}
+                  >
+                    {prefix.replace(' - ', '')}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
           <input
             type="text"
             value={descripcion}
